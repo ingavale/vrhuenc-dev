@@ -1,0 +1,123 @@
+<div class="my-cart" data-ajax-cart-section>
+
+   <span class="close-cart">Remove</span>
+<h3> Your Cart</h3> 
+
+  <div class="shipping-progress-bar">
+  $0 <progress max="10000" value="{{ cart.total_price }}"></progress> $100
+  <br>{% if cart.items.size == 0 %}Add items to your cart to receive free shipping.{% endif %}{% if cart.items.size != 0 %}{% if cart.total_price >= 10000 %} You've got free shipping {% elsif cart.total_price < 10000 %}You're only {{ 10000 | minus: cart.total_price | money }} away from free shipping.{% endif %}{% endif %}
+  </div>
+
+  <div class="my-cart__items" data-ajax-cart-section-scroll>
+    {% for line_item in cart.items %}
+      <hr>
+      {% assign line_item_index = forloop.index %}
+
+      <div class="product-in-cart">
+      <div class="product-img">
+        
+        <div class="cart-item__column cart-item__image" id="cart-item-image-{{ item.id }}">
+          <a href="{{ item.url }}" class="cart__image">
+            {%- assign img_url = item | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+            <img class="lazyload"
+            data-src="{{ img_url }}"
+            data-widths="[180, 360, 540]"
+            data-aspectratio="{{ item.aspect_ratio }}"
+            data-sizes="auto"
+            alt="{{ item.title | escape }}">
+            </a>
+                <a href="{{ item.url }}">
+                  {% render 'responsive-image', image: item.image, max_height: 100 %}
+                </a>
+       </div>
+      </div>
+
+      <div class="product-qty">
+      <div><a href="{{ line_item.url }}">{{ line_item.title | escape }}</a></div>
+       <div class="qty">
+        Qty:
+        <ajax-cart-quantity>
+          <a data-ajax-cart-quantity-minus
+            href="{{ routes.cart_change_url }}?line={{ line_item_index }}&quantity={{ line_item.quantity | minus: 1 }}" > 
+            -
+          </a>
+          <input data-ajax-cart-quantity-input="{{ line_item_index }}"
+            name="updates[]" 
+            value="{{ line_item.quantity }}" 
+            type="number" 
+            form="my-ajax-cart-form" />
+          <a data-ajax-cart-quantity-plus
+            href="{{ routes.cart_change_url }}?line={{ line_item_index }}&quantity={{ line_item.quantity | plus: 1 }}"> 
+           +
+          </a>
+        </ajax-cart-quantity>
+      </div>
+      </div>
+
+
+      <div class="product-pricing">  
+      <div>{{ line_item.final_price | money }}</div>
+      <div><a data-ajax-cart-request-button href="{{ line_item.url_to_remove }}">
+        X
+      </a>
+      </div>
+      </div>
+      </div>
+
+      <div data-ajax-cart-errors="{{ line_item.key }}"></div>
+  
+      <div class="total"> <strong> Subtotal: <span class="total-price">{{ line_item.final_line_price | money }}</span></strong></div>
+
+
+      <hr/>
+    {% endfor %}
+  </div>
+
+  <div class="checkout">
+  {% form 'cart', cart, id: 'my-ajax-cart-form' %}
+    <button type="submit" name="checkout">
+      Checkout — {{ cart.total_price | money_with_currency }}
+    </button> 
+  {% endform %}
+  </div>
+
+{%- assign collection = collections[settings.collection] -%}
+
+  <div class="related-products-section">
+    {% if settings.title %}
+      <div class="heading-collections"><h5>{{ settings.title }}</h5></div>
+    {% endif %}     
+    <div class="block-coll-slide slick-initialized slick-slider">
+      <div class="slick-list draggable">
+       <div class="slick-track">
+      {% for product in collection.products %}
+        <div class="coll-image-block slick-slide">
+          <a href="{{ product.url }}" class="d-block"><img src="{{ product.featured_image | img_url: 'master' }}" alt="" class="img-fluid"></a>
+        </div>
+      {% endfor %}
+        </div>
+      </div>
+      </div>
+  </div>
+ {% include 'like-sec' %} 
+{% schema %} { "name": "My Ajax cart" } {% endschema %}
+
+<!-- <div class="slick-carousel">
+   {% for product in collection.products %}
+  <div class="slide-content"> 
+      <a href="{{ product.url }}" class="d-block"><img src="{{ product.featured_image | img_url: 'master' }}" alt="" class="img-fluid"></a>
+    </div>
+      {% endfor %}
+</div> -->
+
+<script>
+  $().ready(function(){
+  $('.slick-carousel').slick({
+    arrows: true,
+    centerPadding: "0px",
+    dots: true,
+    slidesToShow: 2,
+    infinite: true
+  });
+});
+</script>
